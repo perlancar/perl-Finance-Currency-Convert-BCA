@@ -10,7 +10,7 @@ use Parse::Number::ID qw(parse_number_id);
 # VERSION
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(convert_currency);
+our @EXPORT_OK = qw(get_currencies convert_currency);
 
 our %SPEC;
 
@@ -19,41 +19,75 @@ $SPEC{get_currencies} = {
     v => 1.1,
 };
 sub get_currencies {
-    my $page = get "http://www.bca.co.id/id/biaya-limit/kurs_counter_bca/kurs_counter_bca_landing.jsp"
-        or return [500, "Can't retrieve KlikBCA page"];
+    my %args = @_;
 
-    $page =~ s!(<table .+? DD/TT .+?</table>)!!xs
-        or return [500, "Can't scrape DD/TT table"];
-    my $ddtt_table = $1;
+    my $page;
+    if ($args{_page_content}) {
+        $page = $args{_page_content};
+    } else {
+        $page = get "http://www.bca.co.id/id/biaya-limit/kurs_counter_bca/kurs_counter_bca_landing.jsp"
+            or return [500, "Can't retrieve KlikBCA page"];
+    }
+
+    $page =~ s!(<table .+? Mata\sUang .+?</table>)!!xs
+        or return [500, "Can't scrape Mata Uang table"];
+    my $mu_table = $1;
+    $page =~ s!(<table .+? e-Rate .+?</table>)!!xs
+        or return [500, "Can't scrape e-Rate table"];
+    my $er_table = $1;
+    $page =~ s!(<table .+? TT \s Counter .+?</table>)!!xs
+        or return [500, "Can't scrape TT Counter table"];
+    my $ttc_table = $1;
     $page =~ s!(<table .+? Bank \s Notes .+?</table>)!!xs
-        or return [500, "Can't scrape Bank Notes table"];
+        or return [500, "Can't scrape e-Rate table"];
     my $bn_table = $1;
 
-    # XXX parse DD/TT update date
-    # XXX parse Bank Notes update date
-
     my @items;
-    while ($ddtt_table =~ m!<td[^>]+>([A-Z]{3})</td>\s+
-                            <td[^>]+>([0-9.,]+)</td>\s+
-                            <td[^>]+>([0-9.,]+)</td>
-                           !xsg) {
-        push @items, {
-            currency  => $1,
-            sell_ddtt => parse_number_id(text=>$2),
-            buy_ddtt  => parse_number_id(text=>$3),
-        };
+    while ($mu_table =~ m!<td[^>]+>([A-Z]{3})</td>!gsx) {
+        push @items, { currency => $1 };
     }
+    @items or return [500, "Check: no currencies found in Mata Uang Table"];
     my $num_items = @items;
-    my $i = 0;
-    while ($bn_table   =~ m!<td[^>]+>([0-9.,]+)</td>\s+
-                            <td[^>]+>([0-9.,]+)</td>\s+</tr>
-                           !xsg) {
-        $items[$i]{sell_bn} = parse_number_id(text=>$1);
-        $items[$i]{buy_bn}  = parse_number_id(text=>$2);
+    my $i;
+
+    $i = 0;
+    while ($er_table   =~ m{
+                               <td[^>]+>([0-9.,]+)</td>\s+
+                               <td[^>]+>([0-9.,]+)</td>\s*
+                               (?:<!--.+?-->)?\s*</tr>
+                       }xsg) {
+        $items[$i]{sell_er}  = parse_number_id(text=>$1);
+        $items[$i]{buy_er}   = parse_number_id(text=>$2);
         $i++;
     }
     $i == $num_items or
-        return [500, "Check: num of rows in DD/TT table != Bank Notes table"];
+        return [500, "Check: #rows in Mata Uang table != Bank Notes table"];
+
+    $i = 0;
+    while ($ttc_table   =~ m{
+                                <td[^>]+>([0-9.,]+)</td>\s+
+                                <td[^>]+>([0-9.,]+)</td>\s*
+                                (?:<!--.+?-->)?\s*</tr>
+                       }xsg) {
+        $items[$i]{sell_ttc} = parse_number_id(text=>$1);
+        $items[$i]{buy_ttc}  = parse_number_id(text=>$2);
+        $i++;
+    }
+    $i == $num_items or
+        return [500, "Check: #rows in Mata Uang table != TT Counter table"];
+
+    $i = 0;
+    while ($bn_table   =~ m{
+                               <td[^>]+>([0-9.,]+)</td>\s+
+                               <td[^>]+>([0-9.,]+)</td>\s*
+                               (?:<!--.+?-->)?\s*</tr>
+                       }xsg) {
+        $items[$i]{sell_bn}  = parse_number_id(text=>$1);
+        $items[$i]{buy_bn}   = parse_number_id(text=>$2);
+        $i++;
+    }
+    $i == $num_items or
+        return [500, "Check: #rows in Mata Uang table != Bank Notes table"];
 
     my %items;
     for (@items) {
@@ -71,7 +105,7 @@ sub convert_currency {
     return undef unless uc($to) eq 'IDR';
 
     my $c = $res->[2]{currencies}{uc $from} or return undef;
-    $n * ($c->{sell_ddtt} + $c->{buy_ddtt}) / 2;
+    $n * ($c->{sell_bn} + $c->{buy_bn}) / 2;
 }
 
 1;
