@@ -30,25 +30,27 @@ sub get_currencies {
     }
 
     $page =~ s!(<table .+? Mata\sUang .+?</table>)!!xs
-        or return [500, "Can't scrape Mata Uang table"];
+        or return [543, "Can't scrape Mata Uang table"];
     my $mu_table = $1;
     $page =~ s!(<table .+? e-Rate .+?</table>)!!xs
-        or return [500, "Can't scrape e-Rate table"];
+        or return [543, "Can't scrape e-Rate table"];
     my $er_table = $1;
     $page =~ s!(<table .+? TT \s Counter .+?</table>)!!xs
-        or return [500, "Can't scrape TT Counter table"];
+        or return [543, "Can't scrape TT Counter table"];
     my $ttc_table = $1;
     $page =~ s!(<table .+? Bank \s Notes .+?</table>)!!xs
-        or return [500, "Can't scrape e-Rate table"];
+        or return [543, "Can't scrape e-Rate table"];
     my $bn_table = $1;
 
     my @items;
     while ($mu_table =~ m!<td[^>]+>([A-Z]{3})</td>!gsx) {
         push @items, { currency => $1 };
     }
-    @items or return [500, "Check: no currencies found in Mata Uang Table"];
+    @items or return [543, "Check: no currencies found in Mata Uang Table"];
     my $num_items = @items;
     my $i;
+
+    $num_items >= 3 or return [543, "Sanity: too few items found in Mata Uang Table"];
 
     $i = 0;
     while ($er_table   =~ m{
@@ -61,7 +63,7 @@ sub get_currencies {
         $i++;
     }
     $i == $num_items or
-        return [500, "Check: #rows in Mata Uang table != Bank Notes table"];
+        return [543, "Check: #rows in Mata Uang table != Bank Notes table"];
 
     $i = 0;
     while ($ttc_table   =~ m{
@@ -74,7 +76,7 @@ sub get_currencies {
         $i++;
     }
     $i == $num_items or
-        return [500, "Check: #rows in Mata Uang table != TT Counter table"];
+        return [543, "Check: #rows in Mata Uang table != TT Counter table"];
 
     $i = 0;
     while ($bn_table   =~ m{
@@ -87,7 +89,7 @@ sub get_currencies {
         $i++;
     }
     $i == $num_items or
-        return [500, "Check: #rows in Mata Uang table != Bank Notes table"];
+        return [543, "Check: #rows in Mata Uang table != Bank Notes table"];
 
     my %items;
     for (@items) {
@@ -97,14 +99,27 @@ sub get_currencies {
     [200, "OK", {update_date=>undef, currencies=>\%items}];
 }
 
+our $_get_res;
+
 sub convert_currency {
     my ($n, $from, $to) = @_;
 
-    my $res = get_currencies();
-    return undef if $res->[0] != 200;
-    return undef unless uc($to) eq 'IDR';
+    # XXX set expiry
+    if (!$_get_res) {
+        $_get_res = get_currencies();
+        warn "Can't get currencies: $_get_res->[0] - $_get_res->[1]\n";
+        return undef;
+    }
+    if ($_get_res->[0] != 200) {
+        warn "get currencies failed: $_get_res->[0] - $_get_res->[1]\n";
+        return undef;
+    }
+    if (uc($to) ne 'IDR') {
+        die "Currently only conversion to IDR is supported".
+            " (you asked for conversion to '$to')\n";
+    }
 
-    my $c = $res->[2]{currencies}{uc $from} or return undef;
+    my $c = $_get_res->[2]{currencies}{uc $from} or return undef;
     $n * ($c->{sell_bn} + $c->{buy_bn}) / 2;
 }
 
@@ -118,11 +133,30 @@ sub convert_currency {
  printf "1 USD = Rp %.0f\n", convert_currency(1, 'USD', 'IDR');
 
 
+=head1 DESCRIPTION
+
+
+=head1 FUNCTIONS
+
+=head2 convert_currency($amount, $from, $to) => NUM
+
+Currently can only handle conversion *to* IDR. Dies if given other currency.
+
+Will warn if failed getting currencies from the webpage.
+
+Currency rate is cached.
+
+Currently uses the Bank Notes rate.
+
+Will return undef if no conversion rate is available for the requested currency.
+
+Use get_currencies(), which actually retrieves and scrapes the source web page,
+if you need the more complete result.
+
+
 =head1 TODO
 
-=over 4
-
-=item * Currently can only handle conversion I<to> IDR
+=over
 
 =item * Parse last update time
 
