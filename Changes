@@ -1,5 +1,16 @@
 Revision history for Finance-Currency-Convert-KlikBCA
 
+0.03    2014-02-18 (SHARYANTO)
+
+        - Update against site changes.
+
+        - Use specific error code for scraping/parsing/sanity failure.
+
+        - Add warnings/errors for convert_currency().
+
+        - Add unit tests as well as third party tests in xt-3rd/.
+
+
 0.02    2012-07-18 (SHARYANTO)
 
         - No functional changes. Rebuild (error in weaver.ini).
