@@ -15,7 +15,7 @@ our @EXPORT_OK = qw(get_currencies convert_currency);
 our %SPEC;
 
 $SPEC{get_currencies} = {
-    summary => 'Extract data from KlikBCA page',
+    summary => 'Extract data from KlikBCA/BCA page',
     v => 1.1,
 };
 sub get_currencies {
@@ -26,7 +26,7 @@ sub get_currencies {
         $page = $args{_page_content};
     } else {
         $page = get "http://www.bca.co.id/id/biaya-limit/kurs_counter_bca/kurs_counter_bca_landing.jsp"
-            or return [500, "Can't retrieve KlikBCA page"];
+            or return [500, "Can't retrieve BCA page"];
     }
 
     $page =~ s!(<table .+? Mata\sUang .+?</table>)!!xs
@@ -99,21 +99,20 @@ sub get_currencies {
     [200, "OK", {update_date=>undef, currencies=>\%items}];
 }
 
+# used for testing only
 our $_get_res;
 
 sub convert_currency {
     my ($n, $from, $to) = @_;
 
-    # XXX set expiry
-    if (!$_get_res) {
+    unless ($_get_res) {
         $_get_res = get_currencies();
-        warn "Can't get currencies: $_get_res->[0] - $_get_res->[1]\n";
-        return undef;
+        unless ($_get_res->[0] == 200) {
+            warn "Can't get currencies: $_get_res->[0] - $_get_res->[1]\n";
+            return undef;
+        }
     }
-    if ($_get_res->[0] != 200) {
-        warn "get currencies failed: $_get_res->[0] - $_get_res->[1]\n";
-        return undef;
-    }
+
     if (uc($to) ne 'IDR') {
         die "Currently only conversion to IDR is supported".
             " (you asked for conversion to '$to')\n";
@@ -124,7 +123,7 @@ sub convert_currency {
 }
 
 1;
-# ABSTRACT: Convert currencies using KlikBCA
+# ABSTRACT: Convert currencies using data from KlikBCA/BCA
 
 =head1 SYNOPSIS
 
@@ -144,7 +143,8 @@ Currently can only handle conversion *to* IDR. Dies if given other currency.
 
 Will warn if failed getting currencies from the webpage.
 
-Currency rate is cached.
+Currency rate is not cached (retrieved from the website every time). Employ your
+own caching.
 
 Currently uses the Bank Notes rate.
 
