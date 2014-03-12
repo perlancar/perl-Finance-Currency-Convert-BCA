@@ -5,7 +5,7 @@ use strict;
 use warnings;
 
 use Perinci::Import 'Finance::Currency::Convert::KlikBCA',
-    get_currencies => {dies_on_error=>1};
+    get_currencies => {exit_on_error=>1};
 use Test::More 0.98;
 
 unless ($ENV{EXTENDED_TESTING} || $ENV{THIRD_PARTY_TESTING}) {
