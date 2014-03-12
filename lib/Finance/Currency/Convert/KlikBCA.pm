@@ -21,6 +21,8 @@ $SPEC{get_currencies} = {
 sub get_currencies {
     my %args = @_;
 
+    #return [543, "Test parse failure response"];
+
     my $page;
     if ($args{_page_content}) {
         $page = $args{_page_content};
