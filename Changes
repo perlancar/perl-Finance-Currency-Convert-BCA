@@ -1,10 +1,23 @@
 Revision history for Finance-Currency-Convert-KlikBCA
 
+0.04    2014-03-12 (SHARYANTO)
+
+        [REMOVED FEATURES]
+
+        - Remove caching. Users should cache on their own.
+
+        [INTERNAL]
+
+        - Use Perinci::Import (with exit_on_error=>1 property).
+
+
 0.03    2014-02-18 (SHARYANTO)
 
         - Update against site changes.
 
-        - Use specific error code for scraping/parsing/sanity failure.
+        - Use specific error code for scraping/parsing/sanity failure, to aid
+          third-party testing smoker to detect parsing error immediately
+          (instead of just network error).
 
         - Add warnings/errors for convert_currency().
 
