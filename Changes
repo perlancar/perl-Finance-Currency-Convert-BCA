@@ -1,5 +1,12 @@
 Revision history for Finance-Currency-Convert-KlikBCA
 
+0.05    2014-05-17 (SHARYANTO)
+
+        - No functional changes.
+
+        - Replace File::Slurp with File::Slurp::Tiny.
+
+
 0.04    2014-03-12 (SHARYANTO)
 
         [REMOVED FEATURES]
