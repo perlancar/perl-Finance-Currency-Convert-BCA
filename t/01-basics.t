@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use FindBin '$Bin';
 
-use File::Slurp;
+use File::Slurp::Tiny qw(read_file);
 use Finance::Currency::Convert::KlikBCA qw(convert_currency get_currencies);
 use Test::More 0.98;
 
