@@ -27,7 +27,7 @@ sub get_currencies {
     if ($args{_page_content}) {
         $page = $args{_page_content};
     } else {
-        $page = get "http://www.bca.co.id/id/biaya-limit/kurs_counter_bca/kurs_counter_bca_landing.jsp"
+        $page = get "http://www.bca.co.id/id/kurs-sukubunga/kurs_counter_bca/kurs_counter_bca_landing.jsp"
             or return [500, "Can't retrieve BCA page"];
     }
 
