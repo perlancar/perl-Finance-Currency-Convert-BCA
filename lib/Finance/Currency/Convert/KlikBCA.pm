@@ -104,6 +104,29 @@ sub get_currencies {
 # used for testing only
 our $_get_res;
 
+$SPEC{convert_currency} = {
+    summary => 'Convert currency using KlikBCA',
+    args => {
+        n => {
+            schema=>'float*',
+            req => 1,
+            pos => 0,
+        },
+        from => {
+            schema=>'str*',
+            req => 1,
+            pos => 1,
+        },
+        to => {
+            schema=>'str*',
+            req => 1,
+            pos => 2,
+        },
+    },
+    args_as => 'array',
+    v => 1.1,
+    result_naked => 1,
+};
 sub convert_currency {
     my ($n, $from, $to) = @_;
 
