@@ -1,5 +1,12 @@
 Revision history for Finance-Currency-Convert-KlikBCA
 
+0.06     2014-08-16 (SHARYANTO) - Happy 19th CPAN Day!
+
+         - Update URL (moved).
+
+         - Add a CLI script.
+
+
 0.05    2014-05-17 (SHARYANTO)
 
         - No functional changes.
