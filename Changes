@@ -1,5 +1,13 @@
 Revision history for Finance-Currency-Convert-KlikBCA
 
+0.07     2014-09-05 (PERLANCAR)
+
+         - No functional changes.
+
+         - [Build] Move third party test to xt/smoke/ so it's tested during
+           release using 'dzil test --all'.
+
+
 0.06     2014-08-16 (SHARYANTO) - Happy 19th CPAN Day!
 
          - Update URL (moved).
