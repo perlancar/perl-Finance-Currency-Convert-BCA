@@ -8,8 +8,8 @@ use Perinci::Import 'Finance::Currency::Convert::KlikBCA',
     get_currencies => {exit_on_error=>1};
 use Test::More 0.98;
 
-unless ($ENV{EXTENDED_TESTING} || $ENV{THIRD_PARTY_TESTING}) {
-    plan skip_all => 'Only for extended/third-party testing';
+unless ($ENV{THIRD_PARTY_TESTING}) {
+    plan skip_all => 'Only for third-party testing';
 }
 
 my $res = get_currencies();
