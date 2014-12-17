@@ -1,13 +1,14 @@
 package Finance::Currency::Convert::KlikBCA;
 
+# DATE
+# VERSION
+
 use 5.010001;
 use strict;
 use warnings;
 use Log::Any '$log';
 use LWP::Simple;
 use Parse::Number::ID qw(parse_number_id);
-
-# VERSION
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(get_currencies convert_currency);
@@ -148,7 +149,7 @@ sub convert_currency {
 }
 
 1;
-# ABSTRACT: Convert currencies using data from KlikBCA/BCA
+# ABSTRACT:
 
 =head1 SYNOPSIS
 
