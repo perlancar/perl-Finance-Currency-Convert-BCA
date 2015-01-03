@@ -180,14 +180,6 @@ Use get_currencies(), which actually retrieves and scrapes the source web page,
 if you need the more complete result.
 
 
-=head1 TODO
-
-=over
-
-=item * Parse last update time
-
-=back
-
 =head1 SEE ALSO
 
 L<http://www.klikbca.com/>
