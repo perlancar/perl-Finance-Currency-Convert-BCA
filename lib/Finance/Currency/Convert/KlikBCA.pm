@@ -161,7 +161,7 @@ sub convert_currency {
 =head1 DESCRIPTION
 
 
-=head1 FUNCTIONS
+=head1 prepend:FUNCTIONS
 
 =head2 convert_currency($amount, $from, $to) => NUM
 
