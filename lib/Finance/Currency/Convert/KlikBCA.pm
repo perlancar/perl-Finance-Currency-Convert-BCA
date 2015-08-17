@@ -6,7 +6,7 @@ package Finance::Currency::Convert::KlikBCA;
 use 5.010001;
 use strict;
 use warnings;
-use Log::Any '$log';
+use Log::Any::IfLOG '$log';
 use LWP::Simple;
 use Parse::Number::ID qw(parse_number_id);
 
