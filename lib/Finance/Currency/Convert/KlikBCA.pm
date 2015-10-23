@@ -16,8 +16,20 @@ our @EXPORT_OK = qw(get_currencies convert_currency);
 our %SPEC;
 
 $SPEC{get_currencies} = {
-    summary => 'Extract data from KlikBCA/BCA page',
     v => 1.1,
+    summary => 'Extract data from KlikBCA/BCA page',
+    result => {
+        description => <<'_',
+Will return a hash containing key `currencies`.
+
+The currencies is a hash with currency symbols as keys and prices as values.
+
+Tha values is a hash with these keys: `buy_bn` and `sell_bn` (Bank Note buy/sell
+rates), `buy_er` and `sell_er` (e-Rate buy/sell rates), `buy_ttc` and `sell_ttc`
+(Telegraphic Transfer Counter buy/sell rates).
+
+_
+    },
 };
 sub get_currencies {
     my %args = @_;
