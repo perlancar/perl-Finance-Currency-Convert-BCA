@@ -1,5 +1,12 @@
 Revision history for Finance-Currency-Convert-KlikBCA
 
+0.11    2015-10-23 (PERLANCAR)
+
+	- Add 'which' option for convert_currency().
+
+	- [doc] Add documentation for get_currencies.
+
+
 0.10    2015-09-03 (PERLANCAR)
 
 	- No functional changes.
