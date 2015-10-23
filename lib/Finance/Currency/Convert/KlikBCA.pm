@@ -118,6 +118,7 @@ sub get_currencies {
 our $_get_res;
 
 $SPEC{convert_currency} = {
+    v => 1.1,
     summary => 'Convert currency using KlikBCA',
     args => {
         n => {
@@ -135,13 +136,25 @@ $SPEC{convert_currency} = {
             req => 1,
             pos => 2,
         },
+        which => {
+            summary => 'Select which rate to use (default is average buy+sell for e-Rate)',
+            schema => ['str*', in=>[map { my $bsa = $_; map {"${bsa}_$_"} qw(bn er ttc) } qw(buy sell avg)]],
+            description => <<'_',
+
+{buy,sell,avg}_{bn,er,ttc}.
+
+_
+            default => 'avg_er',
+            pos => 3,
+        },
     },
     args_as => 'array',
-    v => 1.1,
     result_naked => 1,
 };
 sub convert_currency {
-    my ($n, $from, $to) = @_;
+    my ($n, $from, $to, $which) = @_;
+
+    $which //= 'avg_er';
 
     unless ($_get_res) {
         $_get_res = get_currencies();
@@ -157,7 +170,15 @@ sub convert_currency {
     }
 
     my $c = $_get_res->[2]{currencies}{uc $from} or return undef;
-    $n * ($c->{sell_bn} + $c->{buy_bn}) / 2;
+
+    my $rate;
+    if ($which =~ /\Aavg_(.+)/) {
+        $rate = ($c->{"buy_$1"} + $c->{"sell_$1"}) / 2;
+    } else {
+        $rate = $c->{$which};
+    }
+
+    $n * $rate;
 }
 
 1;
