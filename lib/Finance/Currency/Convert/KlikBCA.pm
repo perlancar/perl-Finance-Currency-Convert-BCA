@@ -7,13 +7,13 @@ use 5.010001;
 use strict;
 use warnings;
 use Log::Any::IfLOG '$log';
-use LWP::Simple;
-use Parse::Number::ID qw(parse_number_id);
 
-our @ISA = qw(Exporter);
+use Exporter 'import';
 our @EXPORT_OK = qw(get_currencies convert_currency);
 
 our %SPEC;
+
+my $url = "http://www.bca.co.id/id/Individu/Sarana/Kurs-dan-Suku-Bunga/Kurs-dan-Kalkulator";
 
 $SPEC{get_currencies} = {
     v => 1.1,
@@ -32,6 +32,9 @@ _
     },
 };
 sub get_currencies {
+    require Mojo::DOM;
+    require Parse::Number::ID;
+
     my %args = @_;
 
     #return [543, "Test parse failure response"];
@@ -40,78 +43,45 @@ sub get_currencies {
     if ($args{_page_content}) {
         $page = $args{_page_content};
     } else {
-        $page = get "http://www.bca.co.id/id/kurs-sukubunga/kurs_counter_bca/kurs_counter_bca_landing.jsp"
-            or return [500, "Can't retrieve BCA page"];
+        require Mojo::UserAgent;
+        my $ua = Mojo::UserAgent->new;
+        my $tx = $ua->get($url);
+        unless ($tx->success) {
+            my $err = $tx->error;
+            return [500, "Can't retrieve BCA page ($url): ".
+                        "$err->{code} - $err->{message}"];
+        }
+        $page = $tx->res->body;
     }
 
-    $page =~ s!(<table .+? Mata\sUang .+?</table>)!!xs
-        or return [543, "Can't scrape Mata Uang table"];
-    my $mu_table = $1;
-    $page =~ s!(<table .+? e-Rate .+?</table>)!!xs
-        or return [543, "Can't scrape e-Rate table"];
-    my $er_table = $1;
-    $page =~ s!(<table .+? TT \s Counter .+?</table>)!!xs
-        or return [543, "Can't scrape TT Counter table"];
-    my $ttc_table = $1;
-    $page =~ s!(<table .+? Bank \s Notes .+?</table>)!!xs
-        or return [543, "Can't scrape e-Rate table"];
-    my $bn_table = $1;
+    my $dom  = Mojo::DOM->new($page);
 
-    my @items;
-    while ($mu_table =~ m!<td[^>]+>([A-Z]{3})</td>!gsx) {
-        push @items, { currency => $1 };
+    my %currencies;
+    my $tbody = $dom->find("tbody.text-right")->[0];
+    $tbody->find("tr")->each(
+        sub {
+            my $row0 = shift;
+            my $row = $row0->find("td")->map(
+                sub { $_->text })->to_array;
+            #use DD; dd $row;
+            next unless $row->[0] =~ /\A[A-Z]{3}\z/;
+            $currencies{$row->[0]} = {
+                sell_er  => Parse::Number::ID::parse_number_id(text=>$row->[1]),
+                buy_er   => Parse::Number::ID::parse_number_id(text=>$row->[2]),
+                sell_ttc => Parse::Number::ID::parse_number_id(text=>$row->[3]),
+                buy_ttc  => Parse::Number::ID::parse_number_id(text=>$row->[4]),
+                sell_bn  => Parse::Number::ID::parse_number_id(text=>$row->[5]),
+                buy_bn   => Parse::Number::ID::parse_number_id(text=>$row->[6]),
+            };
+        }
+    );
+
+    if (keys %currencies < 3) {
+        return [543, "Check: no/too few currencies found"];
     }
-    @items or return [543, "Check: no currencies found in Mata Uang Table"];
-    my $num_items = @items;
-    my $i;
 
-    $num_items >= 3 or return [543, "Sanity: too few items found in Mata Uang Table"];
-
-    $i = 0;
-    while ($er_table   =~ m{
-                               <td[^>]+>([0-9.,]+)</td>\s+
-                               <td[^>]+>([0-9.,]+)</td>\s*
-                               (?:<!--.+?-->)?\s*</tr>
-                       }xsg) {
-        $items[$i]{sell_er}  = parse_number_id(text=>$1);
-        $items[$i]{buy_er}   = parse_number_id(text=>$2);
-        $i++;
-    }
-    $i == $num_items or
-        return [543, "Check: #rows in Mata Uang table != Bank Notes table"];
-
-    $i = 0;
-    while ($ttc_table   =~ m{
-                                <td[^>]+>([0-9.,]+)</td>\s+
-                                <td[^>]+>([0-9.,]+)</td>\s*
-                                (?:<!--.+?-->)?\s*</tr>
-                       }xsg) {
-        $items[$i]{sell_ttc} = parse_number_id(text=>$1);
-        $items[$i]{buy_ttc}  = parse_number_id(text=>$2);
-        $i++;
-    }
-    $i == $num_items or
-        return [543, "Check: #rows in Mata Uang table != TT Counter table"];
-
-    $i = 0;
-    while ($bn_table   =~ m{
-                               <td[^>]+>([0-9.,]+)</td>\s+
-                               <td[^>]+>([0-9.,]+)</td>\s*
-                               (?:<!--.+?-->)?\s*</tr>
-                       }xsg) {
-        $items[$i]{sell_bn}  = parse_number_id(text=>$1);
-        $items[$i]{buy_bn}   = parse_number_id(text=>$2);
-        $i++;
-    }
-    $i == $num_items or
-        return [543, "Check: #rows in Mata Uang table != Bank Notes table"];
-
-    my %items;
-    for (@items) {
-        $items{uc $_->{currency}} = $_;
-        delete $_->{currency};
-    }
-    [200, "OK", {update_date=>undef, currencies=>\%items}];
+    # XXX parse update dates (mtime_er, mtime_ttc, mtime_bn)
+    [200, "OK", {currencies=>\%currencies}];
 }
 
 # used for testing only
