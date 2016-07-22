@@ -1,5 +1,12 @@
 Revision history for Finance-Currency-Convert-KlikBCA
 
+0.12    2016-07-22 (PERLANCAR)
+
+        - Update/unbreak (URL changed).
+
+        - Switch to using Mojo::DOM and Mojo::UserAgent.
+
+
 0.11    2015-10-23 (PERLANCAR)
 
 	- Add 'which' option for convert_currency().
