@@ -15,6 +15,22 @@ our %SPEC;
 
 my $url = "http://www.bca.co.id/id/Individu/Sarana/Kurs-dan-Suku-Bunga/Kurs-dan-Kalkulator";
 
+$SPEC{':package'} = {
+    v => 1.1,
+    summary => 'Convert currency using KlikBCA',
+    description => <<"_",
+
+This module can extract currency rates from the BCA/KlikBCA (Bank Central Asia's
+internet banking) website:
+
+    $url
+
+Currently only conversions from a few currencies to Indonesian Rupiah (IDR) are
+supported.
+
+_
+};
+
 $SPEC{get_currencies} = {
     v => 1.1,
     summary => 'Extract data from KlikBCA/BCA page',
@@ -90,6 +106,21 @@ our $_get_res;
 $SPEC{convert_currency} = {
     v => 1.1,
     summary => 'Convert currency using KlikBCA',
+    description => <<'_',
+
+Currently can only handle conversion `to` IDR. Dies if given other currency.
+
+Will warn if failed getting currencies from the webpage.
+
+Currency rate is not cached (retrieved from the website every time). Employ your
+own caching.
+
+Will return undef if no conversion rate is available for the requested currency.
+
+Use `get_currencies()`, which actually retrieves and scrapes the source web
+page, if you need the more complete result.
+
+_
     args => {
         n => {
             schema=>'float*',
@@ -126,17 +157,17 @@ sub convert_currency {
 
     $which //= 'avg_er';
 
+    if (uc($to) ne 'IDR') {
+        die "Currently only conversion to IDR is supported".
+            " (you asked for conversion to '$to')\n";
+    }
+
     unless ($_get_res) {
         $_get_res = get_currencies();
         unless ($_get_res->[0] == 200) {
             warn "Can't get currencies: $_get_res->[0] - $_get_res->[1]\n";
             return undef;
         }
-    }
-
-    if (uc($to) ne 'IDR') {
-        die "Currently only conversion to IDR is supported".
-            " (you asked for conversion to '$to')\n";
     }
 
     my $c = $_get_res->[2]{currencies}{uc $from} or return undef;
@@ -159,32 +190,5 @@ sub convert_currency {
  use Finance::Currency::Convert::KlikBCA qw(convert_currency);
 
  printf "1 USD = Rp %.0f\n", convert_currency(1, 'USD', 'IDR');
-
-
-=head1 DESCRIPTION
-
-
-=head1 prepend:FUNCTIONS
-
-=head2 convert_currency($amount, $from, $to) => NUM
-
-Currently can only handle conversion *to* IDR. Dies if given other currency.
-
-Will warn if failed getting currencies from the webpage.
-
-Currency rate is not cached (retrieved from the website every time). Employ your
-own caching.
-
-Currently uses the Bank Notes rate.
-
-Will return undef if no conversion rate is available for the requested currency.
-
-Use get_currencies(), which actually retrieves and scrapes the source web page,
-if you need the more complete result.
-
-
-=head1 SEE ALSO
-
-L<http://www.klikbca.com/>
 
 =cut
