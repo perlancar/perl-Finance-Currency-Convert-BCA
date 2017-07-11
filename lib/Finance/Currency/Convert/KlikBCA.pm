@@ -12,7 +12,7 @@ our @EXPORT_OK = qw(get_currencies convert_currency);
 
 our %SPEC;
 
-my $url = "http://www.bca.co.id/id/Individu/Sarana/Kurs-dan-Suku-Bunga/Kurs-dan-Kalkulator";
+my $url = "https://www.bca.co.id/id/Individu/Sarana/Kurs-dan-Suku-Bunga/Kurs-dan-Kalkulator";
 
 $SPEC{':package'} = {
     v => 1.1,
