@@ -1,4 +1,4 @@
-package Finance::Currency::Convert::KlikBCA;
+package Finance::Currency::Convert::BCA;
 
 # DATE
 # VERSION
@@ -19,7 +19,7 @@ my $url = "https://www.bca.co.id/id/Individu/Sarana/Kurs-dan-Suku-Bunga/Kurs-dan
 
 $SPEC{':package'} = {
     v => 1.1,
-    summary => 'Convert currency using KlikBCA',
+    summary => 'Convert currency using BCA (Bank Central Asia)',
     description => <<"_",
 
 This module can extract currency rates from the BCA/KlikBCA (Bank Central Asia's
@@ -154,7 +154,7 @@ our $_get_res;
 
 $SPEC{convert_currency} = {
     v => 1.1,
-    summary => 'Convert currency using KlikBCA',
+    summary => 'Convert currency using BCA',
     description => <<'_',
 
 Currently can only handle conversion `to` IDR. Dies if given other currency.
@@ -236,7 +236,7 @@ sub convert_currency {
 
 =head1 SYNOPSIS
 
- use Finance::Currency::Convert::KlikBCA qw(convert_currency);
+ use Finance::Currency::Convert::BCA qw(convert_currency);
 
  printf "1 USD = Rp %.0f\n", convert_currency(1, 'USD', 'IDR');
 

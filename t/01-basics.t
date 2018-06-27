@@ -6,7 +6,7 @@ use warnings;
 use FindBin '$Bin';
 
 use File::Slurper qw(read_text);
-use Finance::Currency::Convert::KlikBCA qw(convert_currency get_currencies);
+use Finance::Currency::Convert::BCA qw(convert_currency get_currencies);
 use Test::More 0.98;
 
 my $page = "$Bin/data/page.html";

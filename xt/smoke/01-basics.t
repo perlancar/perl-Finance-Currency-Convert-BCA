@@ -4,7 +4,7 @@ use 5.010;
 use strict;
 use warnings;
 
-use Perinci::Import 'Finance::Currency::Convert::KlikBCA',
+use Perinci::Import 'Finance::Currency::Convert::BCA',
     get_currencies => {exit_on_error=>1};
 use Test::More 0.98;
 
