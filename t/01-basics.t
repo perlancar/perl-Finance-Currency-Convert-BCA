@@ -13,7 +13,7 @@ my $page = "$Bin/data/page.html";
 
 my $res = get_currencies(_page_content => read_text($page));
 is($res->[0], 200, "get_currencies() status");
-$Finance::Currency::Convert::KlikBCA::_get_res = $res;
+$Finance::Currency::Convert::BCA::_get_res = $res;
 
 is(convert_currency(1, "USD", "IDR"), 13100, "convert_currency() 1");
 is(convert_currency(1, "USD", "IDR", "sell_ttc"), 13250, "convert_currency() 2");
