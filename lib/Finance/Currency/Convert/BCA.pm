@@ -68,7 +68,7 @@ sub get_currencies {
         my $tx = $ua->get($url);
         unless ($tx->success) {
             my $err = $tx->error;
-            return [500, "Can't retrieve BCA page ($url): $err->{message}"];
+            return [500, "Can't retrieve URL $url: $err->{message}"];
         }
         $page = $tx->res->body;
     }
@@ -83,7 +83,7 @@ sub get_currencies {
             my $row = $row0->find("td")->map(
                 sub { $_->text })->to_array;
             #use DD; dd $row;
-            next unless $row->[0] =~ /\A[A-Z]{3}\z/;
+            return unless $row->[0] =~ /\A[A-Z]{3}\z/;
             $currencies{$row->[0]} = {
                 sell_er  => Parse::Number::ID::parse_number_id(text=>$row->[1]),
                 buy_er   => Parse::Number::ID::parse_number_id(text=>$row->[2]),
@@ -139,7 +139,6 @@ sub get_currencies {
 
     $mtime = min(grep {defined} ($mtime_er, $mtime_ttc, $mtime_bn));
 
-    # XXX parse update dates (mtime_er, mtime_ttc, mtime_bn)
     [200, "OK", {
         mtime => $mtime,
         mtime_er => $mtime_er,
