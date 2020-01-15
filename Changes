@@ -83,7 +83,7 @@
            release using 'dzil test --all'.
 
 
-0.06     2014-08-16 (SHARYANTO) - Happy 19th CPAN Day!
+0.06     2014-08-16  Released-By: SHARYANTO; Note: Happy 19th CPAN Day!
 
          - Update URL (moved).
 
@@ -129,3 +129,4 @@
 0.01    2012-07-17  Released-By: SHARYANTO
 
         - First release.
+
