@@ -65,12 +65,11 @@ sub get_currencies {
     } else {
         require Mojo::UserAgent;
         my $ua = Mojo::UserAgent->new;
-        my $tx = $ua->get($url);
-        unless ($tx->success) {
-            my $err = $tx->error;
-            return [500, "Can't retrieve URL $url: $err->{message}"];
+        my $res = $ua->get($url)->result;
+        unless ($res->is_success) {
+            return [500, "Can't retrieve URL $url: ".$res->code." - ".$res->message];
         }
-        $page = $tx->res->body;
+        $page = $res->body;
     }
 
     my $dom  = Mojo::DOM->new($page);
